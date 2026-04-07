@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>КиберЗорро — Производство пилота</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --border: #2a2a2a;
+    --text: #e8e8e8;
+    --text-muted: #666;
+    --cyan: #4ecdc4;
+    --yellow: #f5a623;
+    --yellow-dim: #2d2010;
+    --yellow-text: #f5a623;
+    --purple: #c4b5f5;
+    --green: #6fcf97;
+    --font-mono: 'Geist Mono', monospace;
+    --font: 'Geist', sans-serif;
+    --radius: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 13px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(15,15,15,0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    height: 48px;
+  }
+
+  .nav-logo {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--cyan);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-right: 32px;
+    flex-shrink: 0;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 4px;
+  }
+
+  .nav-link {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: background 0.15s, color 0.15s;
+    letter-spacing: 0.05em;
+  }
+
+  .nav-link:hover { background: #1a1a1a; color: var(--text); }
+  .nav-link.active { background: #1a1a1a; color: var(--text); }
+
+  /* ── SECTIONS ── */
+  section {
+    padding: 48px 40px 64px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-header {
+    margin-bottom: 32px;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+
+  .section-header h2 {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .section-header span {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+  }
+
+  /* ── BOARD (section 1) ── */
+  .board {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    overflow-x: auto;
+    padding-bottom: 16px;
+  }
+
+  .column { flex: 0 0 220px; display: flex; flex-direction: column; gap: 8px; }
+  .column.wide { flex: 0 0 180px; }
+
+  .col-header {
+    background: #111;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+  }
+
+  .card { border-radius: var(--radius); padding: 10px 12px; font-size: 12px; line-height: 1.6; }
+  .card.persons  { background: #1e1a2e; border: 1px solid #3a2f5a; color: #c4b5f5; }
+  .card.locations{ background: #251e0e; border: 1px solid #4a3a1a; color: #d4a96a; }
+  .card.voice    { background: #122a1e; border: 1px solid #1e5a3a; color: #6fcf97; }
+  .card.actions  { background: #1a1a1f; border: 1px solid #32323a; color: #9a9aaa; }
+  .card.work     { background: var(--yellow-dim); border: 1px solid #3d2a0a; color: var(--yellow-text); font-weight: 500; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.02em; }
+
+  .card ul { list-style: none; padding: 0; }
+  .card ul li { padding: 1px 0; }
+  .card ul li::before { content: '—'; margin-right: 6px; opacity: 0.4; font-size: 10px; }
+
+  .legend { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .divider { width: 1px; background: var(--border); align-self: stretch; margin: 0 4px; flex-shrink: 0; }
+
+  ::-webkit-scrollbar { height: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* ── TIMELINE (section 2) ── */
+  .timeline { display: flex; flex-direction: column; max-width: 520px; }
+  .row { display: flex; gap: 20px; align-items: stretch; }
+  .spine { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 32px; }
+
+  .dot {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-size: 11px; font-weight: 600; flex-shrink: 0;
+  }
+  .dot.pre  { background: #0d1f16; border: 2px solid var(--green);  color: var(--green); }
+  .dot.main { background: #1a1a2e; border: 2px solid var(--purple); color: var(--purple); }
+  .dot.rev  { width: 20px; height: 20px; margin: 6px; background: #1a1a1a; border: 2px solid #333; color: var(--text-muted); font-size: 9px; }
+
+  .line { flex: 1; width: 2px; min-height: 16px; }
+  .line.solid  { background: var(--border); }
+  .line.dashed { background: repeating-linear-gradient(to bottom, var(--border) 0, var(--border) 4px, transparent 4px, transparent 8px); }
+
+  .t-content { flex: 1; }
+
+  .phase-block { padding: 10px 0 28px; }
+  .phase-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+  .phase-label.pre  { color: var(--green); }
+  .phase-label.main { color: var(--purple); }
+  .phase-name { font-size: 15px; font-weight: 500; color: var(--text); padding-top: 2px; margin-bottom: 10px; }
+
+  .detail-list { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; background: #0d1f16; border: 1px solid #1e5a3a; border-radius: var(--radius); }
+  .detail-item { font-size: 12px; color: #7abf9a; display: flex; gap: 8px; }
+  .detail-item::before { content: '—'; opacity: 0.4; flex-shrink: 0; }
+
+  .review-block { padding: 8px 0 24px; }
+  .review-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; padding-top: 2px; }
+
+  .pills { display: flex; flex-wrap: wrap; gap: 5px; }
+  .pill { font-family: var(--font-mono); font-size: 10px; padding: 3px 8px; border-radius: 4px; background: #1a1a1a; border: 1px dashed #333; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">КиберЗорро</div>
+  <div class="nav-links">
+    <a class="nav-link" href="#breakdown">Декомпозиция</a>
+    <a class="nav-link" href="#phases">Этапы</a>
+    <a class="nav-link" href="#pricing">Стоимость</a>
+  </div>
+</nav>
+
+<!-- ── SECTION 1: BOARD ── -->
+<section id="breakdown">
+  <div class="section-header">
+    <h2>Декомпозиция пилота</h2>
+    <span>сцены · персонажи · озвучка · объём работ</span>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#1e1a2e;border:1px solid #3a2f5a"></div>Персонажи</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#251e0e;border:1px solid #4a3a1a"></div>Локации и предметы</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#122a1e;border:1px solid #1e5a3a"></div>Голос / озвучка</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#1a1a1f;border:1px solid #32323a"></div>Действия в сцене</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#2d2010;border:1px solid #3d2a0a"></div>Работа исполнителя</div>
+  </div>
+
+  <div class="board">
+
+    <div class="column">
+      <div class="col-header">Совещание в центре киберустойчивости</div>
+      <div class="card persons"><ul><li>Ведущая</li><li>Хакер 1</li><li>Хакер 2</li><li>Хакер 3</li><li>Хакер 4</li><li>Хакер 5</li><li>Хакер 6</li></ul></div>
+      <div class="card locations"><ul><li>Центр киберустойчивости</li><li>Большой экран</li></ul></div>
+      <div class="card voice"><ul><li>Закадровый голос ведущей</li><li>Озвучка AI аватара ведущей</li></ul></div>
+      <div class="card actions"><ul><li>Участники сидят за овальным столом</li><li>Большой экран — анимация в экране</li><li>Ведущая говорит</li><li>Реакция участников</li><li>Презентация героев</li></ul></div>
+    </div>
+
+    <div class="column">
+      <div class="col-header">Штаб КиберЗорро</div>
+      <div class="card persons"><ul><li>Ведущая</li><li>Хакер 1</li><li>Хакер 2</li><li>Хакер 3</li><li>Хакер 4</li><li>Хакер 5</li><li>Хакер 6</li><li>CEO</li></ul></div>
+      <div class="card locations"><ul><li>Штаб</li><li>Большой экран</li><li>Презентация Теневой ревизии</li><li>Презентация Кибергонки на время</li></ul></div>
+      <div class="card voice"><ul><li>Озвучка кружочка ведущей</li><li>Озвучка CEO</li><li>Озвучка AI аватара ведущей</li></ul></div>
+      <div class="card actions"><ul><li>Команда взаимодействует с экраном</li><li>Ведущая выходит на связь с CEO</li><li>Презентация Теневой ревизии</li><li>Презентация Кибергонки на время</li></ul></div>
+    </div>
+
+    <div class="column">
+      <div class="col-header">Компания</div>
+      <div class="card persons"><ul><li>Ведущая</li><li>Хакер 1</li><li>Хакер 2</li><li>Хакер 3</li><li>Хакер 4</li><li>Хакер 5</li><li>Хакер 6</li><li>CEO</li><li>Сотрудник компании</li></ul></div>
+      <div class="card locations"><ul><li>Здание компании</li><li>Офис компании</li><li>Киберкары</li><li>Презентация Теневой ревизии</li><li>Презентация Кибергонки на время</li></ul></div>
+      <div class="card voice"><ul><li>Озвучка CEO</li><li>Озвучка AI аватара ведущей</li><li>Озвучка кого-то из команды</li></ul></div>
+      <div class="card actions"><ul><li>Команда приезжает на объект</li><li>Маскировка входа в офис</li><li>Документальная справка о компании</li><li>Встреча с CEO</li><li>Хакер 1 работает</li><li>Хакер 2 работает</li><li>Хакер 3 работает</li><li>Хакер 4 работает</li><li>Сотрудник компании — становится точкой входа</li><li>CEO делает решение</li></ul></div>
+    </div>
+
+    <div class="column">
+      <div class="col-header">Кибер-ревизия</div>
+      <div class="card persons"><ul><li>Ведущая</li><li>Хакер 1</li><li>Хакер 2</li><li>Хакер 3</li><li>Хакер 4</li><li>Хакер 5</li><li>Хакер 6</li><li>CEO</li><li>Сотрудники компании</li></ul></div>
+      <div class="card locations"><ul><li>Офис компании</li><li>Эффекты для одной из ревизий</li><li>Экран</li><li>Образы сотрудников</li><li>Виртуальный киберполигон</li></ul></div>
+      <div class="card actions"><ul><li>Хакеры работают</li><li>Ведущая ищет инсайдера в компании</li><li>Виртуальный киберполигон — что уже было бы потеряно</li><li>Вручение Z-метки</li></ul></div>
+    </div>
+
+    <div class="column">
+      <div class="col-header">Гоночный трек</div>
+      <div class="card persons"><ul><li>Ведущая</li><li>CEO</li></ul></div>
+      <div class="card locations"><ul><li>Гоночный трек</li><li>Болид</li><li>Монета</li><li>Заставка</li></ul></div>
+      <div class="card voice"><ul><li>Озвучка доклада от команды</li><li>Озвучка ведущей</li></ul></div>
+      <div class="card actions"><ul><li>Доклад по проверке</li><li>Ведущая обращается к CEO</li><li>Подбрасывание фишки</li><li>Болид срывается с места</li><li>Наезд камерой на фишку</li><li>Заставка</li></ul></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="column wide">
+      <div class="col-header" style="color: var(--yellow)">Работа исполнителя</div>
+      <div class="card work">Разработка визуального стиля</div>
+      <div class="card work">Продумывание, AI реализация, утверждение портретов персонажей</div>
+      <div class="card work">Продумывание и AI реализация локаций</div>
+      <div class="card work">AI озвучка закадрового голоса и аватаров</div>
+      <div class="card work">Монтаж</div>
+      <div class="card work">Саунддизайн</div>
+      <div class="card work">Субтитры</div>
+      <div class="card work">Ревью / Правки</div>
+      <div class="card work">Токены / Подписки</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── SECTION 2: PHASES ── -->
+<section id="phases">
+  <div class="section-header">
+    <h2>Этапы производства</h2>
+    <span>последовательность · ревью · согласования</span>
+  </div>
+
+  <div class="timeline">
+
+    <div class="row">
+      <div class="spine"><div class="dot pre">0</div><div class="line solid"></div></div>
+      <div class="t-content">
+        <div class="phase-block">
+          <div class="phase-label pre">Этап 0 · Препродакшн</div>
+          <div class="phase-name">Визуальный стиль и персонажи</div>
+          <div class="detail-list">
+            <div class="detail-item">Разработка визуального стиля проекта</div>
+            <div class="detail-item">Продумывание архетипов персонажей</div>
+            <div class="detail-item">AI-проба портретов команды и ведущей</div>
+            <div class="detail-item">AI-проба локации штаба КиберЗорро</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="spine"><div class="dot rev">↓</div><div class="line dashed"></div></div>
+      <div class="t-content">
+        <div class="review-block">
+          <div class="review-label">Ревью</div>
+          <div class="pills"><span class="pill">утверждение стиля</span><span class="pill">утверждение персонажей</span><span class="pill">переход к этапу 1</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="spine"><div class="dot main">1</div><div class="line solid"></div></div>
+      <div class="t-content">
+        <div class="phase-block">
+          <div class="phase-label main">Этап 1 · Сцена</div>
+          <div class="phase-name">Совещание в центре киберустойчивости</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="spine"><div class="dot rev">↓</div><div class="line dashed"></div></div>
+      <div class="t-content">
+        <div class="review-block">
+          <div class="review-label">Ревью</div>
+          <div class="pills"><span class="pill">правки</span><span class="pill">финализация</span><span class="pill">переход к этапу 2</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="spine"><div class="dot main">2</div><div class="line solid"></div></div>
+      <div class="t-content">
+        <div class="phase-block">
+          <div class="phase-label main">Этап 2 · Сцена</div>
+          <div class="phase-name">Штаб КиберЗорро</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="spine"><div class="dot rev">↓</div><div class="line dashed"></div></div>
+      <div class="t-content">
+        <div class="review-block">
+          <div class="review-label">Ревью</div>
+          <div class="pills"><span class="pill">правки</span><span class="pill">финализация</span><span class="pill">переход к этапу 3</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="spine"><div class="dot main">3</div><div class="line solid"></div></div>
+      <div class="t-content">
+        <div class="phase-block">
+          <div class="phase-label main">Этап 3 · Сцена</div>
+          <div class="phase-name">Компания</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="spine"><div class="dot rev">↓</div><div class="line dashed"></div></div>
+      <div class="t-content">
+        <div class="review-block">
+          <div class="review-label">Ревью</div>
+          <div class="pills"><span class="pill">правки</span><span class="pill">финализация</span><span class="pill">переход к этапу 4</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="spine"><div class="dot main">4</div><div class="line solid"></div></div>
+      <div class="t-content">
+        <div class="phase-block">
+          <div class="phase-label main">Этап 4 · Сцена</div>
+          <div class="phase-name">Кибер-ревизия</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="spine"><div class="dot rev">↓</div><div class="line dashed"></div></div>
+      <div class="t-content">
+        <div class="review-block">
+          <div class="review-label">Ревью</div>
+          <div class="pills"><span class="pill">правки</span><span class="pill">финализация</span><span class="pill">переход к этапу 5</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="spine"><div class="dot main">5</div><div class="line solid"></div></div>
+      <div class="t-content">
+        <div class="phase-block">
+          <div class="phase-label main">Этап 5 · Сцена</div>
+          <div class="phase-name">Гоночный трек</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="spine"><div class="dot rev">↓</div><div class="line dashed"></div></div>
+      <div class="t-content">
+        <div class="review-block">
+          <div class="review-label">Ревью</div>
+          <div class="pills"><span class="pill">правки</span><span class="pill">финализация</span><span class="pill">переход к этапу 6</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="spine"><div class="dot main">6</div><div class="line solid"></div></div>
+      <div class="t-content">
+        <div class="phase-block">
+          <div class="phase-label main">Этап 6 · Сборка</div>
+          <div class="phase-name">Финальный монтаж</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="spine"><div class="dot rev">↓</div></div>
+      <div class="t-content">
+        <div class="review-block">
+          <div class="review-label">Финал</div>
+          <div class="pills">
+            <span class="pill">финальное согласование</span>
+            <span class="pill">сдача</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ── SECTION 3: PRICING ── -->
+<section id="pricing">
+  <div class="section-header">
+    <h2>Стоимость</h2>
+    <span>этапы · что включено · итог</span>
+  </div>
+
+  <div class="pricing-grid">
+
+    <div class="price-card pre-card">
+      <div class="price-stage">Этап 0 · Препродакшн</div>
+      <div class="price-title">Визуальный стиль и персонажи</div>
+      <div class="price-amount">10 000 <span>€</span></div>
+      <ul class="price-includes">
+        <li>Разработка визуального стиля и эстетики ролика</li>
+        <li>Разработка персонажа КиберЗорро и всей команды хакеров — анфас, профиль, сзади, различные позы в интерьере</li>
+        <li>Второстепенные персонажи — CEO, сотрудник компании</li>
+        <li>Локация штаба КиберЗорро</li>
+        <li>Визуализации экранов — кибер-рулетка, карта угроз, цифровой навигатор</li>
+        <li>Финальный мудборд вселенной</li>
+        <li>Подбор голоса КиберЗорро + 2–3 мужских голоса команды</li>
+      </ul>
+    </div>
+
+    <div class="price-card">
+      <div class="price-stage">Этап 1 · Сцена</div>
+      <div class="price-title">Центр киберустойчивости</div>
+      <div class="price-duration">~ 2 мин</div>
+      <div class="price-amount">7 000 <span>€</span></div>
+      <ul class="price-includes">
+        <li>Адаптация сценария</li>
+        <li>Генерация фото и видео</li>
+        <li>Озвучка и саунддизайн</li>
+        <li>Монтаж</li>
+        <li>Согласование (2 итерации правок)</li>
+        <li>Субтитры</li>
+        <li>Токены и подписки</li>
+      </ul>
+    </div>
+
+    <div class="price-card">
+      <div class="price-stage">Этап 2 · Сцена</div>
+      <div class="price-title">Штаб КиберЗорро</div>
+      <div class="price-duration">~ 2 мин</div>
+      <div class="price-amount">7 000 <span>€</span></div>
+      <ul class="price-includes">
+        <li>Адаптация сценария</li>
+        <li>Генерация фото и видео</li>
+        <li>Озвучка и саунддизайн</li>
+        <li>Монтаж</li>
+        <li>Согласование (2 итерации правок)</li>
+        <li>Субтитры</li>
+        <li>Токены и подписки</li>
+      </ul>
+    </div>
+
+    <div class="price-card">
+      <div class="price-stage">Этап 3 · Сцена</div>
+      <div class="price-title">Компания</div>
+      <div class="price-duration">~ 2 мин</div>
+      <div class="price-amount">7 000 <span>€</span></div>
+      <ul class="price-includes">
+        <li>Адаптация сценария</li>
+        <li>Генерация фото и видео</li>
+        <li>Озвучка и саунддизайн</li>
+        <li>Монтаж</li>
+        <li>Согласование (2 итерации правок)</li>
+        <li>Субтитры</li>
+        <li>Токены и подписки</li>
+      </ul>
+    </div>
+
+    <div class="price-card">
+      <div class="price-stage">Этап 4 · Сцена</div>
+      <div class="price-title">Кибер-ревизия</div>
+      <div class="price-duration">~ 2 мин</div>
+      <div class="price-amount">7 000 <span>€</span></div>
+      <ul class="price-includes">
+        <li>Адаптация сценария</li>
+        <li>Генерация фото и видео</li>
+        <li>Озвучка и саунддизайн</li>
+        <li>Монтаж</li>
+        <li>Согласование (2 итерации правок)</li>
+        <li>Субтитры</li>
+        <li>Токены и подписки</li>
+      </ul>
+    </div>
+
+    <div class="price-card final-card">
+      <div class="price-stage">Этап 5 · Финал</div>
+      <div class="price-title">Гоночный трек + заставка</div>
+      <div class="price-duration">~ 1 мин</div>
+      <div class="price-amount">5 000 <span>€</span></div>
+      <ul class="price-includes">
+        <li>Адаптация сценария</li>
+        <li>Генерация фото и видео</li>
+        <li>Разработка финальной заставки для всех выпусков</li>
+        <li>Озвучка и саунддизайн</li>
+        <li>Монтаж</li>
+        <li>Согласование (2 итерации правок)</li>
+        <li>Субтитры</li>
+        <li>Токены и подписки</li>
+      </ul>
+    </div>
+
+    <div class="price-card">
+      <div class="price-stage">Этап 6 · Сборка</div>
+      <div class="price-title">Финальный монтаж</div>
+      <div class="price-amount">2 000 <span>€</span></div>
+      <ul class="price-includes">
+        <li>Склейка всех этапов в единый пилот</li>
+        <li>Финальная цветокоррекция</li>
+        <li>Финальный саунддизайн</li>
+        <li>Мастеринг и сдача</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="price-included-note">
+    <div class="pin-label">Входит в каждый этап</div>
+    <div class="pin-items">
+      <span class="pin-item">Монтаж</span>
+      <span class="pin-item">Саунддизайн</span>
+      <span class="pin-item">Субтитры</span>
+      <span class="pin-item">Токены и подписки</span>
+      <span class="pin-item">2 итерации правок</span>
+    </div>
+  </div>
+
+  <div class="price-total">
+    <div class="price-total-label">Итого за пилот</div>
+    <div class="price-total-amount">45 000 €</div>
+    <div class="price-total-note">Оплата поэтапно · 50% предоплата каждого этапа до старта · перевод на европейский счёт</div>
+  </div>
+
+</section>
+
+<style>
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .price-card {
+    background: #141414;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .price-card.pre-card {
+    background: #0d1f16;
+    border-color: #1e5a3a;
+  }
+
+  .price-card.final-card {
+    background: #1a1a2e;
+    border-color: #3a2f5a;
+  }
+
+  .price-stage {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .pre-card .price-stage { color: var(--green); }
+  .final-card .price-stage { color: var(--purple); }
+
+  .price-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .price-amount {
+    font-family: var(--font-mono);
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 4px 0;
+  }
+
+  .pre-card .price-amount { color: var(--green); }
+  .final-card .price-amount { color: var(--purple); }
+
+  .price-amount span {
+    font-size: 16px;
+    opacity: 0.6;
+  }
+
+  .price-includes {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 4px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .price-includes li {
+    font-size: 11px;
+    color: #888;
+    display: flex;
+    gap: 6px;
+  }
+
+  .price-includes li::before {
+    content: '—';
+    opacity: 0.3;
+    flex-shrink: 0;
+  }
+
+  .price-included-note {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    background: #141414;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+  }
+
+  .pin-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  .pin-items { display: flex; flex-wrap: wrap; gap: 5px; }
+
+  .pin-item {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: #888;
+  }
+
+  .price-duration {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .price-total {
+    background: #111;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .price-total-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  .price-total-amount {
+    font-family: var(--font-mono);
+    font-size: 36px;
+    font-weight: 600;
+    color: var(--cyan);
+    flex-shrink: 0;
+  }
+
+  .price-total-note {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+</style>
+
+</body>
+</html>
